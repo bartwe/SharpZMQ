@@ -15,11 +15,19 @@ namespace SharpZMQ {
             return new() { _context = instance };
         }
 
-        public Socket CreateRequestSocket() {
+        public Socket CreateRequesterSocket() {
             Debug.Assert(_context != IntPtr.Zero);
             var socket = LibzmqBinding.zmq_socket(_context, SocketType.ZMQ_REQ);
             if (socket == IntPtr.Zero)
-                LibzmqBinding.RaiseError("Failed to create socket.");
+                LibzmqBinding.RaiseError("Failed to create requester socket.");
+            return new() { _socket = socket };
+        }
+
+        public Socket CreateResponderSocket() {
+            Debug.Assert(_context != IntPtr.Zero);
+            var socket = LibzmqBinding.zmq_socket(_context, SocketType.ZMQ_REP);
+            if (socket == IntPtr.Zero)
+                LibzmqBinding.RaiseError("Failed to create responder socket.");
             return new() { _socket = socket };
         }
 

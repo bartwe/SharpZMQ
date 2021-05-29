@@ -16,6 +16,15 @@ namespace SharpZMQ {
                 LibzmqBinding.RaiseError("Failed to connect socket to: '" + address + "'.");
         }
 
+        public void Bind(string address) {
+            Debug.Assert(_socket != IntPtr.Zero);
+            var addressUtf8 = Marshal.StringToCoTaskMemUTF8(address);
+            var rc = LibzmqBinding.zmq_bind(_socket, addressUtf8);
+            Marshal.FreeCoTaskMem(addressUtf8);
+            if (rc != 0)
+                LibzmqBinding.RaiseError("Failed to connect socket to: '" + address + "'.");
+        }
+
         public void Close() {
             Debug.Assert(_socket != IntPtr.Zero);
             var rc = LibzmqBinding.zmq_close(_socket);

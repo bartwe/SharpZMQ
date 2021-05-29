@@ -13,6 +13,9 @@
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <None Update="libzmq-LICENSE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="libzmq.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
