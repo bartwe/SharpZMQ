@@ -5,7 +5,7 @@ using System.Net;
 using SharpZMQ.lib;
 
 namespace SharpZMQ {
-    public struct Context {
+    public struct Context : IDisposable {
         internal IntPtr _context;
 
         public static Context Create() {
@@ -13,6 +13,11 @@ namespace SharpZMQ {
             if (instance == IntPtr.Zero)
                 LibzmqBinding.RaiseError("Failed to open context.");
             return new() { _context = instance };
+        }
+
+        public void Dispose() {
+            if (_context != IntPtr.Zero)
+                Close();
         }
 
         public Socket CreateRequesterSocket() {
