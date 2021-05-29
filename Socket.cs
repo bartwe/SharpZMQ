@@ -9,6 +9,8 @@ namespace SharpZMQ {
 
         public void Connect(string address) {
             Debug.Assert(_socket != IntPtr.Zero);
+            if (string.IsNullOrEmpty(address))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(address));
             var addressUtf8 = Marshal.StringToCoTaskMemUTF8(address);
             var rc = LibzmqBinding.zmq_connect(_socket, addressUtf8);
             Marshal.FreeCoTaskMem(addressUtf8);
@@ -23,6 +25,8 @@ namespace SharpZMQ {
 
         public void Bind(string address) {
             Debug.Assert(_socket != IntPtr.Zero);
+            if (string.IsNullOrEmpty(address))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(address));
             var addressUtf8 = Marshal.StringToCoTaskMemUTF8(address);
             var rc = LibzmqBinding.zmq_bind(_socket, addressUtf8);
             Marshal.FreeCoTaskMem(addressUtf8);
@@ -45,7 +49,7 @@ namespace SharpZMQ {
             var localMessage = message;
             var msgPtr = &localMessage;
             var options = sendMore ? SendRecvOptions.ZMQ_SNDMORE : SendRecvOptions.ZMQ_NONE;
-            var rc = LibzmqBinding.zmq_msg_send((IntPtr) msgPtr, _socket, options);
+            var rc = LibzmqBinding.zmq_msg_send((IntPtr)msgPtr, _socket, options);
             if (rc < 0)
                 LibzmqBinding.RaiseError("Failed to send message from socket");
             message = localMessage;
@@ -57,10 +61,10 @@ namespace SharpZMQ {
             var localMessage = message;
             var msgPtr = &localMessage;
             var options = SendRecvOptions.ZMQ_DONTWAIT | (sendMore ? SendRecvOptions.ZMQ_SNDMORE : SendRecvOptions.ZMQ_NONE);
-            var rc = LibzmqBinding.zmq_msg_send((IntPtr) msgPtr, _socket, options);
+            var rc = LibzmqBinding.zmq_msg_send((IntPtr)msgPtr, _socket, options);
             if (rc < 0) {
                 var errno = LibzmqBinding.zmq_errno();
-                if (errno == (int) ErrorCodes.EAGAIN)
+                if (errno == (int)ErrorCodes.EAGAIN)
                     return false;
                 LibzmqBinding.RaiseError("Failed to send message from socket");
             }
@@ -73,7 +77,7 @@ namespace SharpZMQ {
             Debug.Assert(_socket != IntPtr.Zero);
             var localMessage = message;
             var msgPtr = &localMessage;
-            var rc = LibzmqBinding.zmq_msg_recv((IntPtr) msgPtr, _socket, SendRecvOptions.ZMQ_NONE);
+            var rc = LibzmqBinding.zmq_msg_recv((IntPtr)msgPtr, _socket, SendRecvOptions.ZMQ_NONE);
             if (rc < 0)
                 LibzmqBinding.RaiseError("Failed to receive message from socket");
             message = localMessage;
@@ -84,10 +88,10 @@ namespace SharpZMQ {
             Debug.Assert(_socket != IntPtr.Zero);
             var localMessage = message;
             var msgPtr = &localMessage;
-            var rc = LibzmqBinding.zmq_msg_recv((IntPtr) msgPtr, _socket, SendRecvOptions.ZMQ_DONTWAIT);
+            var rc = LibzmqBinding.zmq_msg_recv((IntPtr)msgPtr, _socket, SendRecvOptions.ZMQ_DONTWAIT);
             if (rc < 0) {
                 var errno = LibzmqBinding.zmq_errno();
-                if (errno == (int) ErrorCodes.EAGAIN)
+                if (errno == (int)ErrorCodes.EAGAIN)
                     return false;
                 LibzmqBinding.RaiseError("Failed to receive message from socket");
             }
