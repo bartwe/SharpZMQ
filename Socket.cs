@@ -35,16 +35,17 @@ namespace SharpZMQ {
             var rc = LibzmqBinding.zmq_close(_socket);
             if (rc != 0)
                 LibzmqBinding.RaiseError("Failed to close socket.");
-            _socket = IntPtr.Zero; ;
+            _socket = IntPtr.Zero;
+            ;
         }
 
         // on successful send the message is consumed
         public unsafe bool Send(ref Message message, bool sendMore = false) {
             Debug.Assert(_socket != IntPtr.Zero);
-            Message localMessage = message;
-            Message* msgPtr = &localMessage;
-            var options = (sendMore ? SendRecvOptions.ZMQ_SNDMORE : SendRecvOptions.ZMQ_NONE);
-            var rc = LibzmqBinding.zmq_msg_send((IntPtr)msgPtr, _socket, options);
+            var localMessage = message;
+            var msgPtr = &localMessage;
+            var options = sendMore ? SendRecvOptions.ZMQ_SNDMORE : SendRecvOptions.ZMQ_NONE;
+            var rc = LibzmqBinding.zmq_msg_send((IntPtr) msgPtr, _socket, options);
             if (rc < 0)
                 LibzmqBinding.RaiseError("Failed to send message from socket");
             message = localMessage;
@@ -53,13 +54,13 @@ namespace SharpZMQ {
 
         public unsafe bool SendNonBlocking(ref Message message, bool sendMore = false) {
             Debug.Assert(_socket != IntPtr.Zero);
-            Message localMessage = message;
-            Message* msgPtr = &localMessage;
+            var localMessage = message;
+            var msgPtr = &localMessage;
             var options = SendRecvOptions.ZMQ_DONTWAIT | (sendMore ? SendRecvOptions.ZMQ_SNDMORE : SendRecvOptions.ZMQ_NONE);
-            var rc = LibzmqBinding.zmq_msg_send((IntPtr)msgPtr, _socket, options);
+            var rc = LibzmqBinding.zmq_msg_send((IntPtr) msgPtr, _socket, options);
             if (rc < 0) {
                 var errno = LibzmqBinding.zmq_errno();
-                if (errno == (int)ErrorCodes.EAGAIN)
+                if (errno == (int) ErrorCodes.EAGAIN)
                     return false;
                 LibzmqBinding.RaiseError("Failed to send message from socket");
             }
@@ -70,9 +71,9 @@ namespace SharpZMQ {
         // 'more' is explicitly not exposed as this should be obvious to the protocol above this layer
         public unsafe bool Receive(ref Message message) {
             Debug.Assert(_socket != IntPtr.Zero);
-            Message localMessage = message;
-            Message* msgPtr = &localMessage;
-            var rc = LibzmqBinding.zmq_msg_recv((IntPtr)msgPtr, _socket, SendRecvOptions.ZMQ_NONE);
+            var localMessage = message;
+            var msgPtr = &localMessage;
+            var rc = LibzmqBinding.zmq_msg_recv((IntPtr) msgPtr, _socket, SendRecvOptions.ZMQ_NONE);
             if (rc < 0)
                 LibzmqBinding.RaiseError("Failed to receive message from socket");
             message = localMessage;
@@ -81,14 +82,13 @@ namespace SharpZMQ {
 
         public unsafe bool ReceiveNonBlocking(ref Message message) {
             Debug.Assert(_socket != IntPtr.Zero);
-            Message localMessage = message;
-            Message* msgPtr = &localMessage;
-            var rc = LibzmqBinding.zmq_msg_recv((IntPtr)msgPtr, _socket, SendRecvOptions.ZMQ_DONTWAIT);
+            var localMessage = message;
+            var msgPtr = &localMessage;
+            var rc = LibzmqBinding.zmq_msg_recv((IntPtr) msgPtr, _socket, SendRecvOptions.ZMQ_DONTWAIT);
             if (rc < 0) {
                 var errno = LibzmqBinding.zmq_errno();
-                if (errno == (int)ErrorCodes.EAGAIN) {
+                if (errno == (int) ErrorCodes.EAGAIN)
                     return false;
-                }
                 LibzmqBinding.RaiseError("Failed to receive message from socket");
             }
             message = localMessage;

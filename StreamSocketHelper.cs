@@ -1,20 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SharpZMQ {
     public static class StreamSocketHelper {
         const int ChunkSize = 1024 * 1024;
+
         public static unsafe void SendStream(this Socket socket, Stream stream) {
+            Debug.Assert(stream != null, nameof(stream) + " != null");
             var length = stream.Length - stream.Position;
             {
                 //send length
                 var message = Message.AllocateSendMessage(8);
                 fixed (void* spanPtr = &message.AsSpan().GetPinnableReference())
-                    *(long*)(spanPtr) = length;
+                    *(long*)spanPtr = length;
                 socket.Send(ref message);
             }
             while (length > 0) {
@@ -42,6 +41,7 @@ namespace SharpZMQ {
         }
 
         public static unsafe void ReceiveStream(this Socket socket, Stream stream) {
+            Debug.Assert(stream != null, nameof(stream) + " != null");
             var message = Message.AllocateReceiveMessage();
             try {
                 long length;
