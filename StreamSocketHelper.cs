@@ -14,7 +14,7 @@ namespace SharpZMQ {
                 var message = Message.AllocateSendMessage(8);
                 fixed (void* spanPtr = &message.AsSpan().GetPinnableReference())
                     *(long*)spanPtr = length;
-                socket.Send(ref message);
+                socket.Send(ref message, length > 0);
             }
             while (length > 0) {
                 var partSize = Math.Min(length, ChunkSize);
