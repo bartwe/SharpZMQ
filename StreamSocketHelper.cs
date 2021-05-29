@@ -23,11 +23,11 @@ namespace SharpZMQ {
                 try {
                     var span = message.AsSpan();
                     var offset = stream.Read(span);
-                    if (offset == 0)
+                    if (offset <= 0)
                         throw new EndOfStreamException();
                     while (offset < span.Length) {
                         var count = stream.Read(span.Slice(offset));
-                        if (count == 0)
+                        if (count <= 0)
                             throw new EndOfStreamException();
                         offset += count;
                     }
