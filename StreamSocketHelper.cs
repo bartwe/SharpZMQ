@@ -3,10 +3,23 @@ using System.Diagnostics;
 using System.IO;
 
 namespace SharpZMQ {
+    public enum SendMode {
+        // send the data in with the 'more' flag except for the last part
+        Batched,
+        // send the data each without the 'more' flag
+        // when the receiving side can handle incremental receiving this can help reduce peak buffer usage and latency.
+        // not suitable for sending to a ResponderSocket
+        Parted,
+        // send the data with the 'more' flag, including the last part
+        MoreToFollow,
+    }
+
     public static class StreamSocketHelper {
         const int ChunkSize = 1024 * 1024;
 
-        public static unsafe void SendStream(this Socket socket, Stream stream) {
+        public static unsafe void SendStream(this Socket socket, Stream stream, SendMode mode = SendMode.Batched) {
+            var moreToFollow = mode == SendMode.MoreToFollow;
+            var batched = mode == SendMode.Batched;
             Debug.Assert(stream != null, nameof(stream) + " != null");
             var length = stream.Length - stream.Position;
             {
@@ -14,7 +27,7 @@ namespace SharpZMQ {
                 var message = Message.AllocateSendMessage(8);
                 fixed (void* spanPtr = &message.AsSpan().GetPinnableReference())
                     *(long*)spanPtr = length;
-                socket.Send(ref message, length > 0);
+                socket.Send(ref message, moreToFollow || (length > 0));
             }
             while (length > 0) {
                 var partSize = Math.Min(length, ChunkSize);
@@ -36,7 +49,8 @@ namespace SharpZMQ {
                     Message.Release(ref message);
                     throw;
                 }
-                socket.Send(ref message);
+                var sendMore = moreToFollow || (batched && (length > 0));
+                socket.Send(ref message, sendMore);
             }
         }
 

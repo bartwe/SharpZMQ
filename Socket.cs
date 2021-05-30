@@ -44,7 +44,7 @@ namespace SharpZMQ {
         }
 
         // on successful send the message is consumed
-        public unsafe bool Send(ref Message message, bool sendMore = false) {
+        public unsafe void Send(ref Message message, bool sendMore = false) {
             Debug.Assert(_socket != IntPtr.Zero);
             var localMessage = message;
             var msgPtr = &localMessage;
@@ -53,7 +53,6 @@ namespace SharpZMQ {
             if (rc < 0)
                 LibzmqBinding.RaiseError("Failed to send message from socket");
             message = localMessage;
-            return true;
         }
 
         public unsafe bool SendNonBlocking(ref Message message, bool sendMore = false) {
