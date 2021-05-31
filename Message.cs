@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SharpZMQ.lib;
 
@@ -7,10 +8,12 @@ namespace SharpZMQ {
     public ref struct Message {
         unsafe fixed byte ZmqMsgT[64];
 
-        public static unsafe Span<byte> AsSpan(Message* message) {
-            var length = LibzmqBinding.zmq_msg_size((IntPtr)message);
-            var data = LibzmqBinding.zmq_msg_data((IntPtr)message);
-            return new((void*)data, length);
+        public static unsafe Span<byte> AsSpan(ref Message message) {
+            fixed (void* msgPtr = &message) {
+                var length = LibzmqBinding.zmq_msg_size((IntPtr)msgPtr);
+                var data = LibzmqBinding.zmq_msg_data((IntPtr)msgPtr);
+                return new((void*)data, length);
+            }
         }
 
         public static unsafe Message AllocateReceiveMessage() {
