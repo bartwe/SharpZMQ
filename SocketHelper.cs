@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Sockets;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 namespace SharpZMQ {
     public enum SendMode {
         // send large data with the 'more' flag if it uses multiple message except for the last part
         Batched,
+
         // send the data each without the 'more' flag
         // when the receiving side can handle incremental receiving this can help reduce peak buffer usage and latency.
         // not suitable for sending to a ResponderSocket
         Parted,
+
         // send the data with the 'more' flag, including the last part
         MoreToFollow,
 
@@ -20,9 +20,10 @@ namespace SharpZMQ {
     }
 
     public static class SocketHelper {
-        static UTF8Encoding Utf8Encoding = new();
+        private const int ChunkSize = 1024 * 1024;
+        private static readonly UTF8Encoding Utf8Encoding = new();
 
-        public static unsafe void SendString(this Socket socket, string text, SendMode mode = SendMode.MoreToFollow) {
+        public static void SendString(this Socket socket, string text, SendMode mode = SendMode.MoreToFollow) {
             var moreToFollow = mode == SendMode.MoreToFollow;
             var byteCount = Utf8Encoding.GetByteCount(text);
             var message = Message.AllocateSendMessage(byteCount);
@@ -30,7 +31,7 @@ namespace SharpZMQ {
             socket.Send(ref message, moreToFollow);
         }
 
-        public static unsafe string ReceiveString(this Socket socket) {
+        public static string ReceiveString(this Socket socket) {
             var message = Message.AllocateReceiveMessage();
             try {
                 socket.Receive(ref message);
@@ -46,8 +47,9 @@ namespace SharpZMQ {
             var moreToFollow = mode == SendMode.MoreToFollow;
             var message = Message.AllocateSendMessage(size);
             var span = Message.AsSpan(ref message);
-            fixed (void* spanPtr = &span.GetPinnableReference())
+            fixed (void* spanPtr = &span.GetPinnableReference()) {
                 *(T*)spanPtr = value;
+            }
             socket.Send(ref message, moreToFollow);
         }
 
@@ -57,10 +59,12 @@ namespace SharpZMQ {
             try {
                 socket.Receive(ref message);
                 var span = Message.AsSpan(ref message);
-                if (span.Length != size)
+                if (span.Length != size) {
                     throw new InvalidDataException();
-                fixed (void* spanPtr = &span.GetPinnableReference())
+                }
+                fixed (void* spanPtr = &span.GetPinnableReference()) {
                     return *(T*)spanPtr;
+                }
             }
             finally {
                 Message.Release(ref message);
@@ -71,8 +75,9 @@ namespace SharpZMQ {
             var size = sizeof(T) * span.Length;
             var moreToFollow = mode == SendMode.MoreToFollow;
             var message = Message.AllocateSendMessage(size);
-            fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference())
+            fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference()) {
                 span.CopyTo(new((T*)spanPtr, span.Length));
+            }
             socket.Send(ref message, moreToFollow);
         }
 
@@ -82,21 +87,22 @@ namespace SharpZMQ {
             try {
                 socket.Receive(ref message);
                 var messageSpan = Message.AsSpan(ref message);
-                if (messageSpan.Length != size)
+                if (messageSpan.Length != size) {
                     throw new InvalidDataException();
-                fixed (void* spanPtr = &messageSpan.GetPinnableReference())
+                }
+                fixed (void* spanPtr = &messageSpan.GetPinnableReference()) {
                     new Span<T>((T*)spanPtr, span.Length).CopyTo(span);
+                }
             }
             finally {
                 Message.Release(ref message);
             }
         }
 
-        const int ChunkSize = 1024 * 1024;
-
         public static unsafe void SendStream(this Socket socket, Stream stream, SendMode mode = SendMode.MoreToFollow) {
-            if (mode == SendMode.Flush)
+            if (mode == SendMode.Flush) {
                 mode = SendMode.Batched;
+            }
             var moreToFollow = mode == SendMode.MoreToFollow;
             var batched = mode == SendMode.Batched;
             Debug.Assert(stream != null, nameof(stream) + " != null");
@@ -104,9 +110,10 @@ namespace SharpZMQ {
             {
                 //send length
                 var message = Message.AllocateSendMessage(8);
-                fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference())
+                fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference()) {
                     *(long*)spanPtr = length;
-                socket.Send(ref message, moreToFollow || (length > 0));
+                }
+                socket.Send(ref message, moreToFollow || length > 0);
             }
             while (length > 0) {
                 var partSize = Math.Min(length, ChunkSize);
@@ -115,12 +122,14 @@ namespace SharpZMQ {
                 try {
                     var span = Message.AsSpan(ref message);
                     var offset = stream.Read(span);
-                    if (offset <= 0)
+                    if (offset <= 0) {
                         throw new EndOfStreamException();
+                    }
                     while (offset < span.Length) {
                         var count = stream.Read(span.Slice(offset));
-                        if (count <= 0)
+                        if (count <= 0) {
                             throw new EndOfStreamException();
+                        }
                         offset += count;
                     }
                 }
@@ -128,7 +137,7 @@ namespace SharpZMQ {
                     Message.Release(ref message);
                     throw;
                 }
-                var sendMore = moreToFollow || (batched && (length > 0));
+                var sendMore = moreToFollow || (batched && length > 0);
                 socket.Send(ref message, sendMore);
             }
         }
@@ -140,8 +149,9 @@ namespace SharpZMQ {
                 long length;
                 {
                     socket.Receive(ref message);
-                    fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference())
+                    fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference()) {
                         length = *(long*)spanPtr;
+                    }
                     stream.SetLength(Math.Max(stream.Length, stream.Position + length));
                 }
                 while (length > 0) {

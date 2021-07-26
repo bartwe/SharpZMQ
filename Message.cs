@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SharpZMQ.lib;
 
 namespace SharpZMQ {
     [StructLayout(LayoutKind.Sequential)]
     public ref struct Message {
-        unsafe fixed byte ZmqMsgT[64];
+        private unsafe fixed byte ZmqMsgT[64];
 
         public static unsafe Span<byte> AsSpan(ref Message message) {
             fixed (void* msgPtr = &message) {
@@ -20,8 +19,9 @@ namespace SharpZMQ {
             Message message;
             var msgPtr = &message;
             var rc = LibzmqBinding.zmq_msg_init((IntPtr)msgPtr);
-            if (rc != 0)
+            if (rc != 0) {
                 LibzmqBinding.RaiseError("Failed to initialize receive message.");
+            }
             return message;
         }
 
@@ -29,8 +29,9 @@ namespace SharpZMQ {
             Message message;
             var msgPtr = &message;
             var rc = LibzmqBinding.zmq_msg_init_size((IntPtr)msgPtr, size);
-            if (rc != 0)
+            if (rc != 0) {
                 LibzmqBinding.RaiseError("Failed to initialize send message.");
+            }
             return message;
         }
 
@@ -38,8 +39,9 @@ namespace SharpZMQ {
             var localMessage = message;
             var msgPtr = &localMessage;
             var rc = LibzmqBinding.zmq_msg_close((IntPtr)msgPtr);
-            if (rc != 0)
+            if (rc != 0) {
                 LibzmqBinding.RaiseError("Failed to initialize message.");
+            }
             message = localMessage;
         }
     }

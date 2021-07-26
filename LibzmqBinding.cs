@@ -34,11 +34,12 @@ namespace SharpZMQ.lib {
         static LibzmqBinding() {
             int major, minor, patch;
             zmq_version(out major, out minor, out patch);
-            if (new Version(major, minor, patch) < new Version(4, 1))
+            if (new Version(major, minor, patch) < new Version(4, 1)) {
                 throw VersionNotSupported(null, ">= v4.1");
+            }
         }
 
-        static NotSupportedException VersionNotSupported(string methodName, string requiredVersion) {
+        private static NotSupportedException VersionNotSupported(string? methodName, string requiredVersion) {
             return new(string.Format("{0}libzmq version not supported. Required version {1}", methodName == null ? string.Empty : methodName + ": ", requiredVersion));
         }
 
@@ -155,7 +156,7 @@ namespace SharpZMQ.lib {
 
         public static void RaiseError(string message) {
             var errno = zmq_errno();
-            var text = Marshal.PtrToStringUTF8(zmq_strerror(errno));
+            var text = Marshal.PtrToStringUTF8(zmq_strerror(errno)) ?? "";
             throw new SharpZMQException(message, text);
         }
     }
