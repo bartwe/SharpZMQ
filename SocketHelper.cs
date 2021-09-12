@@ -20,8 +20,8 @@ namespace SharpZMQ {
     }
 
     public static class SocketHelper {
-        private const int ChunkSize = 1024 * 1024;
-        private static readonly UTF8Encoding Utf8Encoding = new();
+        const int ChunkSize = 1024 * 1024;
+        static readonly UTF8Encoding Utf8Encoding = new();
 
         public static void SendString(this Socket socket, string text, SendMode mode = SendMode.MoreToFollow) {
             var moreToFollow = mode == SendMode.MoreToFollow;
@@ -113,7 +113,7 @@ namespace SharpZMQ {
                 fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference()) {
                     *(long*)spanPtr = length;
                 }
-                socket.Send(ref message, moreToFollow || length > 0);
+                socket.Send(ref message, moreToFollow || (length > 0));
             }
             while (length > 0) {
                 var partSize = Math.Min(length, ChunkSize);
@@ -137,7 +137,7 @@ namespace SharpZMQ {
                     Message.Release(ref message);
                     throw;
                 }
-                var sendMore = moreToFollow || (batched && length > 0);
+                var sendMore = moreToFollow || (batched && (length > 0));
                 socket.Send(ref message, sendMore);
             }
         }

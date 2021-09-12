@@ -4,7 +4,7 @@ using SharpZMQ.lib;
 
 namespace SharpZMQ {
     public struct Context : IDisposable {
-        private IntPtr _context;
+        IntPtr _context;
 
         public static Context Create() {
             var instance = LibzmqBinding.zmq_ctx_new();

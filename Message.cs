@@ -5,7 +5,7 @@ using SharpZMQ.lib;
 namespace SharpZMQ {
     [StructLayout(LayoutKind.Sequential)]
     public ref struct Message {
-        private unsafe fixed byte ZmqMsgT[64];
+        unsafe fixed byte ZmqMsgT[64];
 
         public static unsafe Span<byte> AsSpan(ref Message message) {
             fixed (void* msgPtr = &message) {
