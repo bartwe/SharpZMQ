@@ -60,7 +60,8 @@ public static class SocketHelper {
         var size = sizeof(T);
         var message = Message.AllocateReceiveMessage();
         try {
-            if (!socket.Receive(ref message)) throw new();
+            if (!socket.Receive(ref message))
+                throw new();
             var span = Message.AsSpan(ref message);
             if (span.Length != size) {
                 throw new InvalidDataException();
@@ -88,7 +89,8 @@ public static class SocketHelper {
         var size = sizeof(T) * span.Length;
         var message = Message.AllocateReceiveMessage();
         try {
-            if (!socket.Receive(ref message)) throw new();
+            if (!socket.Receive(ref message))
+                throw new();
             var messageSpan = Message.AsSpan(ref message);
             if (messageSpan.Length != size) {
                 throw new InvalidDataException();
@@ -151,7 +153,8 @@ public static class SocketHelper {
         try {
             long length;
             {
-                if (!socket.Receive(ref message)) throw new();
+                if (!socket.Receive(ref message))
+                    throw new();
                 fixed (void* spanPtr = &Message.AsSpan(ref message).GetPinnableReference()) {
                     length = *(long*)spanPtr;
                 }
@@ -160,7 +163,8 @@ public static class SocketHelper {
             while (length > 0) {
                 var partSize = Math.Min(length, ChunkSize);
                 length -= partSize;
-                if (!socket.Receive(ref message)) throw new();
+                if (!socket.Receive(ref message))
+                    throw new();
                 stream.Write(Message.AsSpan(ref message));
             }
         }
