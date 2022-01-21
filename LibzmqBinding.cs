@@ -28,8 +28,8 @@ public enum ErrorCodes {
     EAGAIN = 11,
 }
 
-internal static unsafe class LibzmqBinding {
-    internal const int MessageSize = 64;
+static unsafe class LibzmqBinding {
+    internal const int _MessageSize = 64;
 
     // The static constructor prepares static readonly fields
     static LibzmqBinding() {

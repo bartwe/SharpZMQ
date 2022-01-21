@@ -21,14 +21,14 @@ public enum SendMode {
 }
 
 public static class SocketHelper {
-    const int ChunkSize = 1024 * 1024;
-    static readonly UTF8Encoding Utf8Encoding = new();
+    const int _ChunkSize = 1024 * 1024;
+    static readonly UTF8Encoding _Utf8Encoding = new();
 
     public static void SendString(this Socket socket, string text, SendMode mode = SendMode.MoreToFollow) {
         var moreToFollow = mode == SendMode.MoreToFollow;
-        var byteCount = Utf8Encoding.GetByteCount(text);
+        var byteCount = _Utf8Encoding.GetByteCount(text);
         var message = Message.AllocateSendMessage(byteCount);
-        if (Utf8Encoding.GetBytes(text, Message.AsSpan(ref message)) != byteCount)
+        if (_Utf8Encoding.GetBytes(text, Message.AsSpan(ref message)) != byteCount)
             throw new();
         socket.Send(ref message, moreToFollow);
     }
@@ -38,7 +38,7 @@ public static class SocketHelper {
         try {
             if (!socket.Receive(ref message))
                 throw new();
-            return Utf8Encoding.GetString(Message.AsSpan(ref message));
+            return _Utf8Encoding.GetString(Message.AsSpan(ref message));
         }
         finally {
             Message.Release(ref message);
@@ -121,7 +121,7 @@ public static class SocketHelper {
             socket.Send(ref message, moreToFollow || (length > 0));
         }
         while (length > 0) {
-            var partSize = Math.Min(length, ChunkSize);
+            var partSize = Math.Min(length, _ChunkSize);
             length -= partSize;
             var message = Message.AllocateSendMessage((int)partSize);
             try {
@@ -161,7 +161,7 @@ public static class SocketHelper {
                 stream.SetLength(Math.Max(stream.Length, stream.Position + length));
             }
             while (length > 0) {
-                var partSize = Math.Min(length, ChunkSize);
+                var partSize = Math.Min(length, _ChunkSize);
                 length -= partSize;
                 if (!socket.Receive(ref message))
                     throw new();

@@ -6,7 +6,7 @@ namespace SharpZMQ;
 
 [StructLayout(LayoutKind.Sequential)]
 public ref struct Message {
-    unsafe fixed byte ZmqMsgT[64];
+    unsafe fixed byte _zmqMsgT[64];
 
     public static unsafe Span<byte> AsSpan(ref Message message) {
         fixed (void* msgPtr = &message) {
