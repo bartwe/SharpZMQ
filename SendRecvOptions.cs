@@ -1,4 +1,4 @@
-﻿namespace SharpZMQ.lib;
+﻿namespace SharpZMQ;
 
 public enum SendRecvOptions {
     ZMQ_NONE = 0,

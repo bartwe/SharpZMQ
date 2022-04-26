@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using SharpZMQ.lib;
 
 namespace SharpZMQ;
 

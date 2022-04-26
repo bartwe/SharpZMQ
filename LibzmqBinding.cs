@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace SharpZMQ.lib;
+namespace SharpZMQ;
 
 static unsafe class LibzmqBinding {
     internal const int _MessageSize = 64;

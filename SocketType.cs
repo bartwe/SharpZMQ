@@ -1,4 +1,4 @@
-﻿namespace SharpZMQ.lib;
+﻿namespace SharpZMQ;
 
 public enum SocketType {
     ZMQ_PAIR = 0,
