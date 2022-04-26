@@ -3,31 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace SharpZMQ.lib;
 
-public enum SocketType {
-    ZMQ_PAIR = 0,
-    ZMQ_PUB = 1,
-    ZMQ_SUB = 2,
-    ZMQ_REQ = 3,
-    ZMQ_REP = 4,
-    ZMQ_DEALER = 5,
-    ZMQ_ROUTER = 6,
-    ZMQ_PULL = 7,
-    ZMQ_PUSH = 8,
-    ZMQ_XPUB = 9,
-    ZMQ_XSUB = 10,
-    ZMQ_STREAM = 11,
-}
-
-public enum SendRecvOptions {
-    ZMQ_NONE = 0,
-    ZMQ_DONTWAIT = 1,
-    ZMQ_SNDMORE = 2,
-}
-
-public enum ErrorCodes {
-    EAGAIN = 11,
-}
-
 static unsafe class LibzmqBinding {
     internal const int _MessageSize = 64;
 
@@ -159,8 +134,4 @@ static unsafe class LibzmqBinding {
         var text = Marshal.PtrToStringUTF8(zmq_strerror(errno)) ?? "";
         throw new SharpZMQException(message, text);
     }
-}
-
-public class SharpZMQException : Exception {
-    public SharpZMQException(string message, string text) : base(message + ": " + text) { }
 }

@@ -5,21 +5,6 @@ using System.Text;
 
 namespace SharpZMQ;
 
-public enum SendMode {
-    // send large data with the 'more' flag if it uses multiple message except for the last part
-    Batched,
-
-    // send the data each without the 'more' flag
-    // when the receiving side can handle incremental receiving this can help reduce peak buffer usage and latency.
-    // not suitable for sending to a ResponderSocket
-    Parted,
-
-    // send the data with the 'more' flag, including the last part
-    MoreToFollow,
-
-    Flush,
-}
-
 public static class SocketHelper {
     const int _ChunkSize = 1024 * 1024;
     static readonly UTF8Encoding _Utf8Encoding = new();
